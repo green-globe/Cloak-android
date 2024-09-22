@@ -10,7 +10,6 @@ jobs:
     env:
       NDK_VERSION: r25c
       GO_VERSION: "1.21.1"
-      NDK_HOME: ${{ runner.temp }}/android-ndk
 
     steps:
       - name: Checkout Cloak repository
@@ -24,17 +23,15 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Download Android NDK
+      - name: Download and set up Android NDK
         run: |
-          wget https://dl.google.com/android/repository/android-ndk-${{ env.NDK_VERSION }}-linux.zip -O ${{ runner.temp }}/android-ndk.zip
-          unzip -q ${{ runner.temp }}/android-ndk.zip -d ${{ runner.temp }}
-          mv ${{ runner.temp }}/android-ndk-${{ env.NDK_VERSION }} ${{ env.NDK_HOME }}
-          echo "ANDROID_NDK_HOME=${{ env.NDK_HOME }}" >> $GITHUB_ENV
-
-      - name: Set up NDK environment variables
-        run: |
-          echo "PATH=${{ env.ANDROID_NDK_HOME }}/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH" >> $GITHUB_ENV
-          echo "ANDROID_NDK_ROOT=${{ env.ANDROID_NDK_HOME }}" >> $GITHUB_ENV
+          echo "Downloading Android NDK..."
+          NDK_VERSION=${{ env.NDK_VERSION }}
+          wget https://dl.google.com/android/repository/android-ndk-$NDK_VERSION-linux.zip -O android-ndk.zip
+          unzip -q android-ndk.zip -d $HOME
+          export ANDROID_NDK_HOME=$HOME/android-ndk-$NDK_VERSION
+          echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME" >> $GITHUB_ENV
+          echo "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_PATH
 
       - name: Build Cloak for arm64-v8a
         env:
